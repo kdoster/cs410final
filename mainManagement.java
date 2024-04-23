@@ -357,7 +357,7 @@ public class mainManagement {
                     sqlStatement.executeUpdate(sqlUpdateName);
                 }
             } else {
-                String sqlInsert = "INSERT INTO students (username, student_id, last_name, first_name) VALUES ('" + username + "', '" + studentID + "', '" + lastName + "', '" + firstName + "')";
+                String sqlInsert = "INSERT INTO students (username, student_id, last_name, first_name) VALUES ('" + username + "', '" + studentID + "', '" + LastName + "', '" + FirstName + "')";
                 sqlStatement.executeUpdate(sqlInsert);
                 String sqlEnroll = "INSERT INTO Enrolled (student_id, class_id) VALUES (" + studentID + ", " + activeClass + ");";
             }
@@ -397,7 +397,7 @@ public class mainManagement {
             if (resultSet.next()) {
                 // Student exists
                 int student_id = resultSet.getInt("student_id");
-                String sqlEnroll = String sqlEnroll = "INSERT INTO Enrolled (student_id, class_id) VALUES (" + student_id + ", " + activeClass + ")";
+                String sqlEnroll = "INSERT INTO Enrolled (student_id, class_id) VALUES (" + student_id + ", " + activeClass + ");";
                 sqlStatement.executeUpdate(sqlEnroll);
             } else {
                 System.out.println("ERROR: Student with that username does not exist");
@@ -405,6 +405,94 @@ public class mainManagement {
 
         } catch(SQLException sqlException) {
             System.out.println("Failed to create assignment");
+            System.out.println(sqlException.getMessage());
+        } finally {
+            try {
+                if (sqlStatement != null)
+                    sqlStatement.close();
+            } catch (SQLException se2) {
+            }
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
+        }
+    }
+
+
+    private void showStudents() {
+        Connection connection = null;
+        Statement sqlStatement = null;
+
+        try {
+            if (activeClass == null) {
+                throw new SQLException("Please select a class");
+            }
+            connection = Database.getDatabaseConnection();
+            sqlStatement = connection.createStatement();
+
+            String sqlQuery = "SELECT s.username, s.firstName, s.lastName FROM Students s " +
+                    "JOIN Enrolled e ON s.student_id = e.student_id " +
+                    "WHERE e.class_id = " + activeClass;
+            ResultSet resultSet = sqlStatement.executeQuery(sqlQuery);
+
+            System.out.println("Students in the current class:");
+            while (resultSet.next()) {
+                String username = resultSet.getString("username");
+                String firstName = resultSet.getString("firstName");
+                String lastName = resultSet.getString("lastName");
+                System.out.println("Username: " + username + ", Name: " + firstName + " " + lastName);
+            }
+
+        } catch(SQLException sqlException) {
+            System.out.println("Failed to create assignment");
+            System.out.println(sqlException.getMessage());
+        } finally {
+            try {
+                if (sqlStatement != null)
+                    sqlStatement.close();
+            } catch (SQLException se2) {
+            }
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
+        }
+    }
+
+    private void showStudents(String searchString) {
+        Connection connection = null;
+        Statement sqlStatement = null;
+
+        try {
+            if (activeClass == null) {
+                throw new SQLException("Please select a class");
+            }
+            connection = Database.getDatabaseConnection();
+            sqlStatement = connection.createStatement();
+
+            // Retrieve all students matching the search string in their name or username
+            String sqlQuery = "SELECT username, firstName, lastName FROM Students " +
+                    "WHERE LOWER(username) LIKE '%" + searchString.toLowerCase() + "%' " +
+                    "OR LOWER(firstName) LIKE '%" + searchString.toLowerCase() + "%' " +
+                    "OR LOWER(lastName) LIKE '%" + searchString.toLowerCase() + "%'";
+            ResultSet resultSet = sqlStatement.executeQuery(sqlQuery);
+
+            // Display the students
+            System.out.println("Students matching '" + searchString + "':");
+            while (resultSet.next()) {
+                String username = resultSet.getString("username");
+                String firstName = resultSet.getString("firstName");
+                String lastName = resultSet.getString("lastName");
+                System.out.println("Username: " + username + ", Name: " + firstName + " " + lastName);
+            }
+
+        } catch(SQLException sqlException) {
+            System.out.println("Failed to show students");
             System.out.println(sqlException.getMessage());
         } finally {
             try {

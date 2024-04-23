@@ -1,3 +1,4 @@
+import javax.xml.transform.Result;
 import java.sql.*;
 import java.util.Scanner;
 
@@ -315,6 +316,94 @@ public class mainManagement {
             String sql = "insert into Assignments(class_id, category_id, name, description, point_value) values (" + activeClass + ", " + "(select category_id from Categories where name = " + category + "), " + name + ", " + description + ", " + points + ")";
             sqlStatement.execute(sql);
         } catch (SQLException sqlException) {
+            System.out.println("Failed to create assignment");
+            System.out.println(sqlException.getMessage());
+        } finally {
+            try {
+                if (sqlStatement != null)
+                    sqlStatement.close();
+            } catch (SQLException se2) {
+            }
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
+        }
+    }
+
+    private void addStudent(String username, String studentID, String LastName, String FirstName) {
+        Connection connection = null;
+        Statement sqlStatement = null;
+
+        try {
+            if (activeClass == null) {
+                throw new SQLException("Please select a class");
+            }
+            connection = Database.getDatabaseConnection();
+            sqlStatement = connection.createStatement();
+
+            //Have to check if the student exists already
+            String sql = "SELECT * FROM Students WHERE id = '" + studentID + "'";
+            ResultSet resultSet = sqlStatement.executeQuery(sql);
+
+            if (resultSet.next()) {
+                String storedFirstName = resultSet.getString("firstName");
+                String storedLastName = resultSet.getString("lastName");
+                if (!storedFirstName.equals(FirstName) || !storedLastName.equals(LastName)) {
+                    System.out.println("WARNING: Name is being changed");
+                    String sqlUpdateName = "UPDATE students SET last_name = '" + LastName + "', first_name = '" + FirstName + "' WHERE username = '" + username + "'";
+                    sqlStatement.executeUpdate(sqlUpdateName);
+                }
+            } else {
+                String sqlInsert = "INSERT INTO students (username, student_id, last_name, first_name) VALUES ('" + username + "', '" + studentID + "', '" + lastName + "', '" + firstName + "')";
+                sqlStatement.executeUpdate(sqlInsert);
+                String sqlEnroll = "INSERT INTO Enrolled (student_id, class_id) VALUES (" + studentID + ", " + activeClass + ");";
+            }
+
+        } catch(SQLException sqlException) {
+            System.out.println("Failed to create assignment");
+            System.out.println(sqlException.getMessage());
+        } finally {
+            try {
+                if (sqlStatement != null)
+                    sqlStatement.close();
+            } catch (SQLException se2) {
+            }
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
+        }
+    }
+
+    private void addStudent(String username) {
+        Connection connection = null;
+        Statement sqlStatement = null;
+
+        try {
+            if (activeClass == null) {
+                throw new SQLException("Please select a class");
+            }
+            connection = Database.getDatabaseConnection();
+            sqlStatement = connection.createStatement();
+
+            String sqlCheck = "SELECT * FROM Students WHERE username = '" + username + "'";
+            ResultSet resultSet = sqlStatement.executeQuery(sqlCheck);
+
+            if (resultSet.next()) {
+                // Student exists
+                int student_id = resultSet.getInt("student_id");
+                String sqlEnroll = String sqlEnroll = "INSERT INTO Enrolled (student_id, class_id) VALUES (" + student_id + ", " + activeClass + ")";
+                sqlStatement.executeUpdate(sqlEnroll);
+            } else {
+                System.out.println("ERROR: Student with that username does not exist");
+            }
+
+        } catch(SQLException sqlException) {
             System.out.println("Failed to create assignment");
             System.out.println(sqlException.getMessage());
         } finally {

@@ -363,7 +363,7 @@ public class mainManagement {
             }
 
         } catch(SQLException sqlException) {
-            System.out.println("Failed to create assignment");
+            System.out.println("Failed to add student");
             System.out.println(sqlException.getMessage());
         } finally {
             try {
@@ -404,7 +404,7 @@ public class mainManagement {
             }
 
         } catch(SQLException sqlException) {
-            System.out.println("Failed to create assignment");
+            System.out.println("Failed to add student");
             System.out.println(sqlException.getMessage());
         } finally {
             try {
@@ -447,7 +447,7 @@ public class mainManagement {
             }
 
         } catch(SQLException sqlException) {
-            System.out.println("Failed to create assignment");
+            System.out.println("Failed to show students");
             System.out.println(sqlException.getMessage());
         } finally {
             try {
@@ -493,6 +493,224 @@ public class mainManagement {
 
         } catch(SQLException sqlException) {
             System.out.println("Failed to show students");
+            System.out.println(sqlException.getMessage());
+        } finally {
+            try {
+                if (sqlStatement != null)
+                    sqlStatement.close();
+            } catch (SQLException se2) {
+            }
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
+        }
+    }
+
+    private void gradeAssignment(String assignmentName, String username, float grade) {
+        Connection connection = null;
+        Statement sqlStatement = null;
+
+        try {
+            if (activeClass == null) {
+                throw new SQLException("Please select a class");
+            }
+            connection = Database.getDatabaseConnection();
+            sqlStatement = connection.createStatement();
+
+            // Grade in sql
+            String sqlAssignment = "SELECT a.assignment_id, a.point_value " +
+                    "FROM Assignments a " +
+                    "JOIN Classes c ON a.class_id = c.class_id " +
+                    "WHERE a.name = '" + assignmentName + "' AND c.class_id = " + activeClass;
+            ResultSet assignmentResultSet = sqlStatement.executeQuery(sqlAssignment);
+
+            if (assignmentResultSet.next()) {
+                int assignmentId = assignmentResultSet.getInt("assignment_id");
+                int maxPoints = assignmentResultSet.getInt("point_value");
+
+                if (grade > maxPoints) {
+                    System.out.println("The grade exceeds the maximum points for the assignment (" + maxPoints + " points)");
+                }
+
+                // Check if the student already has a grade for this assignment
+                String sqlCheckGrade = "SELECT * FROM Grades WHERE student_id = (SELECT student_id FROM Students WHERE username = '" + username + "') AND assignment_id = " + assignmentId;
+                ResultSet gradeResultSet = sqlStatement.executeQuery(sqlCheckGrade);
+
+                if (gradeResultSet.next()) {
+                    // Student already has a grade for this assignment, update it
+                    String sqlUpdateGrade = "UPDATE Grades SET grade = " + grade + " WHERE student_id = (SELECT student_id FROM Students WHERE username = '" + username + "') AND assignment_id = " + assignmentId;
+                    sqlStatement.executeUpdate(sqlUpdateGrade);
+                } else {
+                    // Student does not have a grade for this assignment, insert a new record
+                    String sqlInsertGrade = "INSERT INTO Grades (student_id, assignment_id, grade) VALUES ((SELECT student_id FROM Students WHERE username = '" + username + "'), " + assignmentId + ", " + grade + ")";
+                    sqlStatement.executeUpdate(sqlInsertGrade);
+                }
+            } else {
+              System.out.println("ERROR: Assignment was not found in the class");
+            }
+
+        } catch(SQLException sqlException) {
+            System.out.println("Failed to show students");
+            System.out.println(sqlException.getMessage());
+        } finally {
+            try {
+                if (sqlStatement != null)
+                    sqlStatement.close();
+            } catch (SQLException se2) {
+            }
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
+        }
+    }
+
+    private void studentGrades(String username) {
+        Connection connection = null;
+        Statement sqlStatement = null;
+
+        try {
+            if (activeClass == null) {
+                throw new SQLException("Please select a class");
+            }
+            connection = Database.getDatabaseConnection();
+            sqlStatement = connection.createStatement();
+
+            // Query to retrieve the student's current grade
+            String sqlQuery = "SELECT c.name AS category, a.name AS assignment, a.point_value AS max_points, " +
+                    "IFNULL(g.grade, 0) AS grade " +
+                    "FROM Categories c " +
+                    "LEFT JOIN Assignments a ON c.category_id = a.category_id " +
+                    "LEFT JOIN (SELECT assignment_id, grade FROM Grades WHERE student_id = " +
+                    "(SELECT student_id FROM Students WHERE username = '" + username + "')) g " +
+                    "ON a.assignment_id = g.assignment_id " +
+                    "WHERE c.class_id = " + activeClass + " " +
+                    "ORDER BY c.category_id, a.assignment_id";
+
+            ResultSet resultSet = sqlStatement.executeQuery(sqlQuery);
+
+            // Display the student's current grade
+            System.out.println("Student's Current Grade for " + activeClass + ":");
+            float totalPoints = 0;
+            float totalMaxPoints = 0;
+            float totalAttemptedPoints = 0;
+            String currentCategory = null;
+            float categoryTotalPoints = 0;
+            float categoryMaxPoints = 0;
+
+            while (resultSet.next()) {
+                String category = resultSet.getString("category");
+                String assignment = resultSet.getString("assignment");
+                float grade = resultSet.getFloat("grade");
+                float maxPoints = resultSet.getFloat("max_points");
+
+                if (currentCategory == null || !currentCategory.equals(category)) {
+                    // Print category name
+                    if (currentCategory != null) {
+                        //Print subtotal for previous
+                        System.out.println("Category Subtotal: " + categoryTotalPoints + "/" + categoryMaxPoints);
+                        // Readability
+                        System.out.println();
+                    }
+                    System.out.println("Category: " + category);
+                    currentCategory = category;
+                    categoryTotalPoints = 0;
+                    categoryMaxPoints = 0;
+                }
+
+                System.out.println("  " + assignment + ": " + grade + "/" + maxPoints);
+
+                // Update category totals
+                categoryTotalPoints += grade;
+                categoryMaxPoints += maxPoints;
+
+                // Update overall totals
+                totalPoints += grade;
+                totalMaxPoints += maxPoints;
+                if (grade != 0) {
+                    totalAttemptedPoints += maxPoints;
+                }
+            }
+
+            // Print subtotal for last category
+            if (currentCategory != null) {
+                System.out.println("Category Subtotal: " + categoryTotalPoints + "/" + categoryMaxPoints);
+                System.out.println(); // Add an empty line for readability
+            }
+
+            // Print overall grade
+            float overallGrade = (totalPoints / totalMaxPoints) * 100;
+            float attemptedGrade = (totalPoints / totalAttemptedPoints) * 100;
+            System.out.println("Overall Grade (Total): " + overallGrade);
+            System.out.println("Overall Grade (Attempted): " + attemptedGrade);
+
+        } catch(SQLException sqlException) {
+            System.out.println("Failed to show student grades");
+            System.out.println(sqlException.getMessage());
+        } finally {
+            try {
+                if (sqlStatement != null)
+                    sqlStatement.close();
+            } catch (SQLException se2) {
+            }
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
+        }
+    }
+
+    private void gradebook() {
+        Connection connection = null;
+        Statement sqlStatement = null;
+
+        try {
+            if (activeClass == null) {
+                throw new SQLException("Please select a class");
+            }
+            connection = Database.getDatabaseConnection();
+            sqlStatement = connection.createStatement();
+
+            // Query to retrieve the gradebook for the current class
+            String sqlQuery = "SELECT s.username, s.student_id, s.firstName, s.lastName, " +
+                    "SUM(COALESCE(g.grade, 0)) AS total_grade, " +
+                    "SUM(CASE WHEN g.grade IS NOT NULL THEN a.point_value ELSE 0 END) AS total_attempted_points " +
+                    "FROM Students s " +
+                    "LEFT JOIN Grades g ON s.student_id = g.student_id " +
+                    "LEFT JOIN Assignments a ON g.assignment_id = a.assignment_id " +
+                    "WHERE a.class_id = " + activeClass + " " +
+                    "GROUP BY s.username, s.student_id, s.firstName, s.lastName";
+
+            ResultSet resultSet = sqlStatement.executeQuery(sqlQuery);
+
+            // Display the gradebook for the current class
+            System.out.println("Gradebook for " + activeClass + ":");
+            while (resultSet.next()) {
+                String username = resultSet.getString("username");
+                int studentId = resultSet.getInt("student_id");
+                String firstName = resultSet.getString("firstName");
+                String lastName = resultSet.getString("lastName");
+                float totalGrade = resultSet.getFloat("total_grade");
+                float totalAttemptedPoints = resultSet.getFloat("total_attempted_points");
+
+                // Calculate overall grade for the student
+                float overallGrade = (totalGrade / totalAttemptedPoints) * 100;
+
+                // Print student details and overall grade
+                System.out.println("Username: " + username + ", Student ID: " + studentId + ", Name: " + firstName + " " + lastName);
+                System.out.println("Overall Grade: " + overallGrade);
+                System.out.println(); // Add an empty line for readability
+            }
+
+        } catch(SQLException sqlException) {
+            System.out.println("Failed to show gradebook");
             System.out.println(sqlException.getMessage());
         } finally {
             try {
@@ -608,8 +826,11 @@ public class mainManagement {
                 case "exit":
                     System.out.println("Exiting");
                     return;
+                case "testDB":
+                    Database.testConnection();
+                    break;
                 default:
-                    System.out.println("Unknown command");
+                System.out.println("Unknown command");
             }
         }
     }

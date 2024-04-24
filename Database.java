@@ -83,4 +83,9 @@ public class Database {
             try { connection.close(); } catch (Exception e) { /* ignored */ }
         }
     }
+
+    public static void main(String args[]) {
+
+    }
 }
+

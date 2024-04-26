@@ -28,25 +28,20 @@ public class Database {
      */
     public static Connection getDatabaseConnection() throws SQLException {
         int databasePort = 56341;
-        String databaseHost = "127.0.0.1";
-        String databaseUsername = "msandbox";
         String databasePassword = "FinalDatabase";
         String databaseName = "CS410FinalDatabase";
-        String databaseURL = String.format(
-                "jdbc:mysql://%s:%s/%s?verifyServerCertificate=false&useSSL=false&serverTimezone=UTC",
-                databaseHost,
-                databasePort,
-                databaseName);
-
-        try {
-
-            return DriverManager.getConnection(databaseURL, databaseUsername, databasePassword);
-        } catch (SQLException sqlException) {
-            System.out.printf("SQLException was thrown while trying to connection to database: %s%n", databaseURL);
-            System.out.println(sqlException.getMessage());
-            throw sqlException;
-        }
-
+        /*
+         * STEP 1 and 2
+         * LOAD the Database DRIVER and obtain a CONNECTION
+         *
+         * */
+        //System.out.println("jdbc:mysql://localhost:"+databasePort+"/test?verifyServerCertificate=false&useSSL=true");
+        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:"+databasePort+"/test?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
+                databasePassword);
+        // Do something with the Connection
+        System.out.println("Database [test db] connection succeeded!");
+        System.out.println();
+        return con;
     }
 
     /**

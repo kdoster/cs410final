@@ -14,7 +14,7 @@ public class mainManagement {
     private Connection getConnection() {
         Connection conn = null;
         try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost/CS410Final?user=root&password=root");
+            conn = Database.getDatabaseConnection();
         } catch (SQLException e) {
             e.printStackTrace();
         }

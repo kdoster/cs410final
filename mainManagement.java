@@ -60,7 +60,7 @@ public class mainManagement {
             sqlStatement = connection.createStatement();
             String sql = "select c.course_number, c.term, c.section_number, c.description, count(e.student_id) from Classes as c left join Enrollments as e on c.class_id = e.class_id group by e.class_id";
             System.out.println("Course Number | Term | Section Number | Description | # of Students");
-            System.out.println("-".repeat(80));
+            //System.out.println("-".repeat(80));
             ResultSet results = sqlStatement.executeQuery(sql);
             results.next();
             while (!results.isAfterLast()) {
@@ -732,6 +732,7 @@ public class mainManagement {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Welcome to class management");
 
+        /*
         while (true) {
             System.out.print(">");
             String input = scanner.nextLine();
@@ -833,5 +834,6 @@ public class mainManagement {
                 System.out.println("Unknown command");
             }
         }
+        */
     }
 }

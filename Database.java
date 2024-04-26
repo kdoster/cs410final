@@ -27,11 +27,11 @@ public class Database {
      * @throws SQLException
      */
     public static Connection getDatabaseConnection() throws SQLException {
-        int databasePort = Integer.parseInt(System.getenv("CS410_PORT"));
-        String databaseHost = System.getenv("CS410_HOST");
-        String databaseUsername = System.getenv("CS410_USERNAME");
-        String databasePassword = System.getenv("CS410_PASSWORD");
-        String databaseName = System.getenv("CS410_DATABASE");
+        int databasePort = 56341;
+        String databaseHost = "127.0.0.1";
+        String databaseUsername = "msandbox";
+        String databasePassword = "FinalDatabase";
+        String databaseName = "CS410FinalDatabase";
         String databaseURL = String.format(
                 "jdbc:mysql://%s:%s/%s?verifyServerCertificate=false&useSSL=false&serverTimezone=UTC",
                 databaseHost,

@@ -1,12 +1,12 @@
 CREATE DATABASE IF NOT EXISTS CS410Final; 
 USE CS410Final; 
 
-DROP TABLE IF EXISTS Classes;
-DROP TABLE IF EXISTS Categories;
-DROP TABLE IF EXISTS Assignments;
-DROP TABLE IF EXISTS Students;
-DROP TABLE IF EXISTS Enrolled;
 DROP TABLE IF EXISTS Grades;
+DROP TABLE IF EXISTS Enrolled;
+DROP TABLE IF EXISTS Students;
+DROP TABLE IF EXISTS Assignments;
+DROP TABLE IF EXISTS Categories;
+DROP TABLE IF EXISTS Classes;
 
 CREATE TABLE Classes (
     class_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -46,8 +46,7 @@ CREATE TABLE Enrolled (
     enrollment_id INT PRIMARY KEY AUTO_INCREMENT,
     student_id INT NOT NULL,
     class_id INT NOT NULL,
-    username varchar(50) NOT NULL,
-    FOREIGN KEY (student_id, username) REFERENCES Students(student_id),
+    FOREIGN KEY (student_id) REFERENCES Students(student_id),
     FOREIGN KEY (class_id) REFERENCES Classes(class_id)
 );
 

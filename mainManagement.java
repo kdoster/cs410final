@@ -290,14 +290,19 @@ public class mainManagement {
             }
             connection = Database.getDatabaseConnection();
             sqlStatement = connection.createStatement();
-            String sql = "select name, point_value from Assignments where Assignments.class_id = " + activeClass + " group by category_id;";
+            String sql = "select Categories.name, Assignments.name, Assignments.point_value from Categories join Assignments on Categories.category_id = Assignments.category_id where Assignments.class_id = " + activeClass + " group by Categories.name, Assignments.name, Assignments.point_value;";
             ResultSet results = sqlStatement.executeQuery(sql);
 
             if (results == null) {
                 throw new SQLException("Class doesn't exist.");
             }
 
-            System.out.println(results.getString(1) + " | " + results.getInt(2));
+	    results.next();
+            while (!results.isAfterLast()) {
+                System.out.println(results.getString(1) + " | " + results.getString(2) + " | " + results.getInt(3));
+                results.next();
+            } 
+
         } catch (SQLException sqlException) {
             System.out.println("Failed to show assignments");
             System.out.println(sqlException.getMessage());

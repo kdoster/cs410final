@@ -31,7 +31,7 @@ public class mainManagement {
             connection = Database.getDatabaseConnection();
             sqlStatement = connection.createStatement();
             String sql = "insert into Classes(course_number, term, section_number, description) values (" + courseNumber
-                    + ", " + term + ", " + sectionNumber + ", " + description + ")";
+                    + ", " + term + ", " + sectionNumber + ", " + description + ");";
             sqlStatement.execute(sql);
         } catch (SQLException sqlException) {
             System.out.println("Failed to create class");
@@ -58,7 +58,7 @@ public class mainManagement {
         try {
             connection = Database.getDatabaseConnection();
             sqlStatement = connection.createStatement();
-            String sql = "select c.course_number, c.term, c.section_number, c.description, count(e.student_id) from Classes as c left join Enrollments as e on c.class_id = e.class_id group by e.class_id";
+            String sql = "select c.course_number, c.term, c.section_number, c.description, count(e.student_id) from Classes as c left join Enrolled as e on c.class_id = e.class_id group by c.class_id;";
             System.out.println("Course Number | Term | Section Number | Description | # of Students");
             //System.out.println("-".repeat(80));
             ResultSet results = sqlStatement.executeQuery(sql);
@@ -174,7 +174,7 @@ public class mainManagement {
             }
             connection = Database.getDatabaseConnection();
             sqlStatement = connection.createStatement();
-            String sql = "select * from Classes where class_id = " + activeClass;
+            String sql = "select * from Classes where class_id = " + activeClass + ";";
             ResultSet results = sqlStatement.executeQuery(sql);
 
             if (results == null) {
@@ -211,7 +211,7 @@ public class mainManagement {
             }
             connection = Database.getDatabaseConnection();
             sqlStatement = connection.createStatement();
-            String sql = "select name, weight from Categories where class_id = " + activeClass;
+            String sql = "select name, weight from Categories where class_id = " + activeClass + ";";
             ResultSet results = sqlStatement.executeQuery(sql);
 
             if (results == null) {
@@ -247,7 +247,7 @@ public class mainManagement {
             }
             connection = Database.getDatabaseConnection();
             sqlStatement = connection.createStatement();
-            String sql = "insert into Categories(class_id, name, weight) values (" + activeClass + ", " + name + ", " + weight + ")";
+            String sql = "insert into Categories(class_id, name, weight) values (" + activeClass + ", " + name + ", " + weight + ");";
             sqlStatement.execute(sql);
         } catch (SQLException sqlException) {
             System.out.println("Failed to create category");
@@ -277,7 +277,7 @@ public class mainManagement {
             }
             connection = Database.getDatabaseConnection();
             sqlStatement = connection.createStatement();
-            String sql = "select name, point_value from Assignments where class_id = " + activeClass + "group by category_id";
+            String sql = "select name, point_value from Assignments where class_id = " + activeClass + "group by category_id;";
             ResultSet results = sqlStatement.executeQuery(sql);
 
             if (results == null) {
@@ -313,7 +313,7 @@ public class mainManagement {
             }
             connection = Database.getDatabaseConnection();
             sqlStatement = connection.createStatement();
-            String sql = "insert into Assignments(class_id, category_id, name, description, point_value) values (" + activeClass + ", " + "(select category_id from Categories where name = " + category + "), " + name + ", " + description + ", " + points + ")";
+            String sql = "insert into Assignments(class_id, category_id, name, description, point_value) values (" + activeClass + ", " + "(select category_id from Categories where name = " + category + "), " + name + ", " + description + ", " + points + ");";
             sqlStatement.execute(sql);
         } catch (SQLException sqlException) {
             System.out.println("Failed to create assignment");
@@ -732,8 +732,7 @@ public class mainManagement {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Welcome to class management");
 
-        /*
-        while (true) {
+	while (true) {
             System.out.print(">");
             String input = scanner.nextLine();
             String[] tokens = input.trim().split("\\s+");
@@ -834,6 +833,5 @@ public class mainManagement {
                 System.out.println("Unknown command");
             }
         }
-        */
     }
 }

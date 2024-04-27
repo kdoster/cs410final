@@ -36,7 +36,7 @@ public class Database {
          *
          * */
         //System.out.println("jdbc:mysql://localhost:"+databasePort+"/test?verifyServerCertificate=false&useSSL=true");
-        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:"+databasePort+"/test?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
+        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:"+databasePort+"/CS410Final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
                 databasePassword);
         // Do something with the Connection
         System.out.println("Database [test db] connection succeeded!");

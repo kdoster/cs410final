@@ -355,6 +355,7 @@ public class mainManagement {
         }
     }
 
+    //Adds a student or modifies an existing one
     private void addStudent(String username, String studentID, String LastName, String FirstName) {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -404,6 +405,7 @@ public class mainManagement {
         }
     }
 
+    //Adds an existing student or throws error
     private void addStudent(String username) {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -445,7 +447,7 @@ public class mainManagement {
         }
     }
 
-
+    //Shows the students in the class
     private void showStudents() {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -488,6 +490,7 @@ public class mainManagement {
         }
     }
 
+    //Shows the students that fit the search string
     private void showStudents(String searchString) {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -533,6 +536,7 @@ public class mainManagement {
         }
     }
 
+    //Assigns a grade to an assignment
     private void gradeAssignment(String assignmentName, String username, float grade) {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -594,6 +598,7 @@ public class mainManagement {
         }
     }
 
+    //Shows a students grades
     private void studentGrades(String username) {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -691,6 +696,7 @@ public class mainManagement {
         }
     }
 
+    //Shows all of the grades for the class
     private void gradebook() {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -751,6 +757,7 @@ public class mainManagement {
         }
     }
 
+    //Main method that runs the gradebook
     public static void main(String[] args) {
         mainManagement shell = new mainManagement();
         Scanner scanner = new Scanner(System.in);

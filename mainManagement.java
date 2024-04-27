@@ -229,7 +229,10 @@ public class mainManagement {
             }
 
 	    results.next();
-            System.out.println(results.getString(1) + " | " + results.getFloat(2));
+	    while (!results.isAfterLast()) {
+            	System.out.println(results.getString(1) + " | " + results.getFloat(2));
+		results.next();
+	    }
         } catch (SQLException sqlException) {
             System.out.println("Failed to show categories");
             System.out.println(sqlException.getMessage());

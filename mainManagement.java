@@ -23,6 +23,7 @@ public class mainManagement {
 
     // Functions for managing class
 
+    //Add a new class
     public void newClass(String courseNumber, String term, int sectionNumber, String description) {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -30,8 +31,9 @@ public class mainManagement {
         try {
             connection = Database.getDatabaseConnection();
             sqlStatement = connection.createStatement();
-            String sql = "insert into Classes(course_number, term, section_number, description) values (" + courseNumber
-                    + ", " + term + ", " + sectionNumber + ", " + description + ");";
+            String sql = "insert into Classes (course_number, term, section_number, description) values ('" + courseNumber
+                    + "', '" + term + "', " + sectionNumber + ", '" + description + "');";
+	    System.out.println(sql);
             sqlStatement.execute(sql);
         } catch (SQLException sqlException) {
             System.out.println("Failed to create class");
@@ -51,6 +53,7 @@ public class mainManagement {
         }
     }
 
+    //List all the classes
     public void listClasses() {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -86,18 +89,20 @@ public class mainManagement {
         }
     }
 
+    //Select the section of the course from the most recent semester, fail if multiple sections
     public void selectClass(String courseNumber) {
         selectClass(courseNumber, "Sp24");
     }
 
+    // Select the section of the course from the given semester, fail if multiple sections
     public void selectClass(String courseNumber, String term) {
         Connection connection = null;
         Statement sqlStatement = null;
 
         try {
             connection = Database.getDatabaseConnection();
-            sqlStatement = connection.createStatement();
-            String sql = "select * from Classes where course_number = " + courseNumber + " and term = " + term + ";";
+            sqlStatement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            String sql = "select * from Classes where course_number = '" + courseNumber + "' and term = '" + term + "';";
             ResultSet results = sqlStatement.executeQuery(sql);
 
             int size = 0;
@@ -130,6 +135,7 @@ public class mainManagement {
         }
     }
 
+    // Select the given course section
     public void selectClass(String courseNumber, String term, int sectionNumber) {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -137,8 +143,8 @@ public class mainManagement {
         try {
             connection = Database.getDatabaseConnection();
             sqlStatement = connection.createStatement();
-            String sql = "select * from Classes where course_number = " + courseNumber + " and term = " + term
-                    + " and section_number = " + sectionNumber + ";";
+            String sql = "select * from Classes where course_number = '" + courseNumber + "' and term = '" + term
+                    + "' and section_number = " + sectionNumber + ";";
             ResultSet results = sqlStatement.executeQuery(sql);
 
             if (results == null) {
@@ -164,6 +170,7 @@ public class mainManagement {
         }
     }
 
+    // Show the active class
     public void showClass() {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -173,7 +180,8 @@ public class mainManagement {
                 throw new SQLException("Please select a class.");
             }
             connection = Database.getDatabaseConnection();
-            sqlStatement = connection.createStatement();
+            sqlStatement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                                  ResultSet.CONCUR_UPDATABLE);
             String sql = "select * from Classes where class_id = " + activeClass + ";";
             ResultSet results = sqlStatement.executeQuery(sql);
 
@@ -181,8 +189,9 @@ public class mainManagement {
                 throw new SQLException("Class doesn't exist.");
             }
 
-            System.out.println(results.getString(1) + " | " + results.getString(2) + " | " + results.getInt(3) + " | "
-                    + results.getString(4));
+	    results.first();
+            System.out.println(results.getString(2) + " | " + results.getString(3) + " | " + results.getInt(4) + " | "
+                    + results.getString(5));
         } catch (SQLException sqlException) {
             System.out.println("Failed to show class");
             System.out.println(sqlException.getMessage());
@@ -201,6 +210,7 @@ public class mainManagement {
         }
     }
 
+    // Show all categories and weights in the active class
     public void showCategories() {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -218,6 +228,7 @@ public class mainManagement {
                 throw new SQLException("Class doesn't exist.");
             }
 
+	    results.next();
             System.out.println(results.getString(1) + " | " + results.getFloat(2));
         } catch (SQLException sqlException) {
             System.out.println("Failed to show categories");
@@ -237,6 +248,7 @@ public class mainManagement {
         }
     }
 
+    // Add a new category to the active class
     public void addCategory(String name, float weight) {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -247,7 +259,7 @@ public class mainManagement {
             }
             connection = Database.getDatabaseConnection();
             sqlStatement = connection.createStatement();
-            String sql = "insert into Categories(class_id, name, weight) values (" + activeClass + ", " + name + ", " + weight + ");";
+            String sql = "insert into Categories(class_id, name, weight) values (" + activeClass + ", '" + name + "', " + weight + ");";
             sqlStatement.execute(sql);
         } catch (SQLException sqlException) {
             System.out.println("Failed to create category");
@@ -267,6 +279,7 @@ public class mainManagement {
         }
     }
 
+    // Show all assignments for the active class, grouped by category
     public void showAssignments() {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -277,7 +290,7 @@ public class mainManagement {
             }
             connection = Database.getDatabaseConnection();
             sqlStatement = connection.createStatement();
-            String sql = "select name, point_value from Assignments where class_id = " + activeClass + "group by category_id;";
+            String sql = "select name, point_value from Assignments where Assignments.class_id = " + activeClass + " group by category_id;";
             ResultSet results = sqlStatement.executeQuery(sql);
 
             if (results == null) {
@@ -303,6 +316,7 @@ public class mainManagement {
         }
     }
 
+    // Add a new assignment to the given category
     public void addAssignment(String name, String category, String description, int points) {
         Connection connection = null;
         Statement sqlStatement = null;
@@ -313,7 +327,7 @@ public class mainManagement {
             }
             connection = Database.getDatabaseConnection();
             sqlStatement = connection.createStatement();
-            String sql = "insert into Assignments(class_id, category_id, name, description, point_value) values (" + activeClass + ", " + "(select category_id from Categories where name = " + category + "), " + name + ", " + description + ", " + points + ");";
+            String sql = "insert into Assignments(class_id, category_id, name, description, point_value) values (" + activeClass + ", " + "(select category_id from Categories where name = '" + category + "'), '" + name + "', '" + description + "', " + points + ");";
             sqlStatement.execute(sql);
         } catch (SQLException sqlException) {
             System.out.println("Failed to create assignment");
@@ -774,7 +788,7 @@ public class mainManagement {
                         System.out.println("Usage: add-category <name> <weight>");
                     }
                     break;
-                case "show-assignments":
+                case "show-assignment":
                     shell.showAssignments();
                     break;
                 case "add-assignment":

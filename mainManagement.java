@@ -375,14 +375,16 @@ public class mainManagement {
                 String storedLastName = resultSet.getString("lastName");
                 if (!storedFirstName.equals(FirstName) || !storedLastName.equals(LastName)) {
                     System.out.println("WARNING: Name is being changed");
-                    String sqlUpdateName = "UPDATE students SET last_name = '" + LastName + "', first_name = '" + FirstName + "' WHERE username = '" + username + "'";
+                    String sqlUpdateName = "UPDATE Students SET last_name = '" + LastName + "', first_name = '" + FirstName + "' WHERE student_id = '" + studentID + "'";
                     sqlStatement.executeUpdate(sqlUpdateName);
                 }
             } else {
-                String sqlInsert = "INSERT INTO students (username, student_id, last_name, first_name) VALUES ('" + username + "', '" + studentID + "', '" + LastName + "', '" + FirstName + "')";
-                sqlStatement.executeUpdate(sqlInsert);
-                String sqlEnroll = "INSERT INTO Enrolled (student_id, class_id) VALUES (" + studentID + ", " + activeClass + ");";
+                // Insert new student
+                String sqlInsertStudent = "INSERT INTO Students (username, student_id, last_name, first_name) VALUES ('" + username + "', '" + studentID + "', '" + LastName + "', '" + FirstName + "')";
+                sqlStatement.executeUpdate(sqlInsertStudent);
             }
+            String sqlEnroll = "INSERT INTO Enrolled (student_id, class_id) VALUES (" + studentID + ", " + activeClass + ")";
+            sqlStatement.executeUpdate(sqlEnroll);
 
         } catch(SQLException sqlException) {
             System.out.println("Failed to add student");
